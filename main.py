@@ -3,8 +3,8 @@ import sqlite3
 import json
 
 from boardgamegeek import BGGClient, BGGApiError, CacheBackendSqlite
-bgg = BGGClient(cache=CacheBackendSqlite(path="H:/bggcache.db", ttl=36000), requests_per_minute=30)
-# bgg = BGGClient()
+# bgg = BGGClient(cache=CacheBackendSqlite(path="H:/bggcache.db", ttl=36000), requests_per_minute=30)
+bgg = BGGClient()
 
 conn = sqlite3.connect('testkanta2.db')
 cursor = conn.cursor()
@@ -12,8 +12,8 @@ cursor = conn.cursor()
 boardGamesConn = sqlite3.connect('database.sqlite')
 c = boardGamesConn.cursor()
 
-startid = 1
-endid = 1001
+# startid = 1
+# endid = 1001
 clearTable = False
 
 if clearTable == True:
