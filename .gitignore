@@ -1,3 +1,5 @@
 bgg_kanta.db
 user_reviews.db
 *.npy
+__pycache__/*.pyc
+*.ann
