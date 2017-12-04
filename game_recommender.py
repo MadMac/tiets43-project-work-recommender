@@ -3,40 +3,38 @@ from annoy import AnnoyIndex
 
 class GameRecommender(object):
 
-    def __init__(self):
-        """ Tries to load the necessary data when the object is created
-        Throws:
-            FileNotFoundError: If some of the necessary files are not found
-        """
-        self.game_indexes = np.load('game_indexes.npy').item()
-        self.user_indexes = np.load('user_indexes.npy').item()
-        self.users_list = np.load('users_list.npy')
-        self.games_list = np.load('games_list.npy')
-        self.data = np.load('data.npy')
+    def __init__(self, fn_game_indexes='game_indexes.npy', fn_user_indexes='user_indexes.npy',
+                 fn_users_list='users_list.npy', fn_games_list='games_list.npy',
+                 fn_data='data.npy', fn_annoy_index='annoy_index.ann'):
+        self.file_names = {
+            'game_indexes' : fn_game_indexes,
+            'user_indexes' : fn_user_indexes,
+            'users_list' : fn_users_list,
+            'games_list' : fn_games_list,
+            'data' : fn_data,
+            'annoy_index' : fn_annoy_index
+        }
+        self.game_indexes = np.load(fn_game_indexes).item()
+        self.user_indexes = np.load(fn_user_indexes).item()
+        self.users_list = np.load(fn_users_list)
+        self.games_list = np.load(fn_games_list)
+        self.data = np.load(fn_data)
 
-    def create_annoy_index(self):
-        """ Creates the index for Annoy, also saves the index to disk
-        """
-        t = AnnoyIndex(len(self.games_list))
-        for i in range(len(self.users_list)):
-            t.add_item(i, self.data[i])
-        t.build(10)
-        t.save('annoy_index.ann')
-
-    def recommendations_by_username(self, username, n):
+    def recommendations_by_username(self, username, n, rating_limit=8):
         """ Uses the generated index for finding nearest neighbors and then tries
         to find game recommendations from those users
 
         Args:
             username: Username string from the dataset
-            n: number of game recommendations generated
+            n: Number of recommendations generated
+            rating_limit: Only recoomend games that the similar users have rated higher than this value
         Returns:
             List of game recommendations indexes
         """
         index = self.user_indexes[username]
         user_row = self.data[index]
         u = AnnoyIndex(len(self.games_list))
-        u.load('annoy_index.ann')
+        u.load(self.file_names['annoy_index'])
 
         r_indexes = []
         i = 0
@@ -45,41 +43,81 @@ class GameRecommender(object):
             while i < len(u_neighbors):
                 neighbor = self.data[u_neighbors[i]]
                 for k in range(len(neighbor)):
-                    if neighbor[k] != 0 and user_row[k] == 0 and k not in r_indexes:
+                    if neighbor[k] > rating_limit and user_row[k] == 0 and k not in r_indexes:
                         r_indexes.append(k)
                         if len(r_indexes) >= n:
                             break
                 i = i + 1
                 if len(r_indexes) >= n:
                     break
-        #for index in r_indexes:
-        #    print(self.games_list[index])
+        for index in r_indexes:
+            print(self.games_list[index])
         return r_indexes
 
-    def recommendations_by_vector(self, vec, n):
-        """ TODO Annoy has a function that searches neighbors by given vector,
-        so searches can be done without adding an user to the data
-        """
-        pass
+    def recommendations_by_vector(self, vec, n, rating_limit=8):
+        """ Finds users who have given similar reviews as in the given vector and finds
+        n game recommendations from those users
 
-    def add_item_to_annoy(self, username, vector):
-        """ TODO Annoy has a function that adds vector to the generated index,
-        the index then has to be saved on disk, but it means that theres no need
-        for a full generation of the index again (If the number of games doesn't change)
+        Args:
+            vec: List of ratings (length has to be the same as length of games_list)
+            n: Number of recommendations generated
+            rating_limit: Only recommend games that the similar users have rated higher than this
+        Returns:
+            List of game indexes that are recommended
         """
-        pass
+        u = AnnoyIndex(len(self.games_list))
+        u.load(self.file_names['annoy_index'])
 
-    def add_row_to_data(self, username, row):
+        r_indexes = []
+        i = 0
+        while len(r_indexes) < n:
+            u_neighbors = u.get_nns_by_vector(vec, i+100)
+            while i < len(u_neighbors):
+                neighbor = self.data[u_neighbors[i]]
+                for k in range(len(neighbor)):
+                    if neighbor[k] > rating_limit and vec[k] == 0 and k not in r_indexes:
+                        r_indexes.append(k)
+                        if len(r_indexes) >= n:
+                            break
+                i = i + 1
+                if len(r_indexes) >= n:
+                    break
+        for index in r_indexes:
+            print(self.games_list[index])
+        return r_indexes
+
+    def build_annoy_index(self, n_trees=10):
+        """ Creates the index for Annoy, also saves the index to disk
+        Args:
+            n_trees: Default=10, Higher values give more precision, but take longer
+        """
+        t = AnnoyIndex(len(self.games_list))
+        for i in range(len(self.users_list)):
+            t.add_item(i, self.data[i])
+        t.build(n_trees)
+        t.save(self.file_names['annoy_index'])
+
+    def add_user(self, username, vec):
+        """ Adds a new user to the data and rebuilds the AnnoyIndex
+        Args:
+            username: Username used for indexing
+            vec: Vector of ratings for the games
+        """
+        self.__add_row_to_data(username, vec)
+        self.__save_current_user_data()
+        self.build_annoy_index()
+
+    def __add_row_to_data(self, username, row):
         """ Adds a new user to the data
         Note: AnnoyIndex has to be generated again to search with the username
         """
         self.data = np.vstack((self.data, np.array(row)))
-        self.users_list.append(username)
+        self.users_list = np.append(self.users_list, username)
         self.user_indexes[username] = len(self.users_list) - 1
 
-    def save_current_user_data(self):
+    def __save_current_user_data(self):
         """ Saves the current user data to disk
         """
-        np.save('data.npy', self.data)
-        np.save('users_list.npy', self.users_list)
-        np.save('user_indexes.npy', self.user_indexes)
+        np.save(self.file_names['data'], self.data)
+        np.save(self.file_names['users_list'], self.users_list)
+        np.save(self.file_names['user_indexes'], self.user_indexes)
