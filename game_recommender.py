@@ -27,7 +27,7 @@ class GameRecommender(object):
         Args:
             username: Username string from the dataset
             n: Number of recommendations generated
-            rating_limit: Only recoomend games that the similar users have rated higher than this value
+            rating_limit: Only recoomend games that atleast on of the similar users have rated higher than this value
         Returns:
             List of game recommendations indexes
         """
@@ -37,6 +37,7 @@ class GameRecommender(object):
         u.load(self.file_names['annoy_index'])
 
         r_indexes = []
+        r_users = []
         i = 0
         while len(r_indexes) < n:
             u_neighbors = u.get_nns_by_item(index, i+100)
@@ -45,14 +46,26 @@ class GameRecommender(object):
                 for k in range(len(neighbor)):
                     if neighbor[k] > rating_limit and user_row[k] == 0 and k not in r_indexes:
                         r_indexes.append(k)
+                        r_users.append(neighbor)
                         if len(r_indexes) >= n:
                             break
                 i = i + 1
                 if len(r_indexes) >= n:
                     break
-        for index in r_indexes:
-            print(self.games_list[index])
-        return r_indexes
+        
+        # Aggregate the similar users, and average the ratings they have given to the 
+        # Recommended games
+        a_neighbor = self.__average_similar_user_ratings(r_users)
+        new_games = []
+        for i in range(len(a_neighbor)):
+            if user_row[k] == 0 and a_neighbor[i] != 0:
+                new_games.append((i, a_neighbor[i]))
+        new_games.sort(key=lambda x: x[1], reverse=True)
+        new_games = new_games[:n]
+        
+        for index in new_games:
+            print("Game: {0:40} Simlar users rating: {1:4.3}".format(self.games_list[index[0]], index[1]))
+        return new_games
 
     def recommendations_by_vector(self, vec, n, rating_limit=8):
         """ Finds users who have given similar reviews as in the given vector and finds
@@ -61,7 +74,7 @@ class GameRecommender(object):
         Args:
             vec: List of ratings (length has to be the same as length of games_list)
             n: Number of recommendations generated
-            rating_limit: Only recommend games that the similar users have rated higher than this
+            rating_limit: Only recommend games that atleast on of the similar users have rated higher than this
         Returns:
             List of game indexes that are recommended
         """
@@ -69,6 +82,7 @@ class GameRecommender(object):
         u.load(self.file_names['annoy_index'])
 
         r_indexes = []
+        r_users = []
         i = 0
         while len(r_indexes) < n:
             u_neighbors = u.get_nns_by_vector(vec, i+100)
@@ -77,14 +91,42 @@ class GameRecommender(object):
                 for k in range(len(neighbor)):
                     if neighbor[k] > rating_limit and vec[k] == 0 and k not in r_indexes:
                         r_indexes.append(k)
+                        r_users.append(neighbor)
                         if len(r_indexes) >= n:
                             break
                 i = i + 1
                 if len(r_indexes) >= n:
                     break
-        for index in r_indexes:
-            print(self.games_list[index])
-        return r_indexes
+        
+        # Aggregate the similar users, and average the ratings they have given to the 
+        # Recommended games
+        a_neighbor = self.__average_similar_user_ratings(r_users)
+        new_games = []
+        for i in range(len(a_neighbor)):
+            if vec[k] == 0 and a_neighbor[i] != 0:
+                new_games.append((i, a_neighbor[i]))
+        new_games.sort(key=lambda x: x[1], reverse=True)
+        new_games = new_games[:n]
+        
+        for index in new_games:
+            print("Game: {0:40} Simlar users rating: {1:4.3}".format(self.games_list[index[0]], index[1]))
+        return new_games
+
+    def __average_similar_user_ratings(self, r_users):
+        combined_user = []
+        for g in self.games_list:
+            combined_user.append([])
+        for user in r_users:
+            for i in range(len(user)):
+                if user[i] != 0:
+                    combined_user[i].append(user[i])
+        average_list = []
+        for ratings in combined_user:
+            if ratings != []:
+                average_list.append(sum(ratings)/len(ratings))
+            else:
+                average_list.append(0)
+        return average_list
 
     def build_annoy_index(self, n_trees=10):
         """ Creates the index for Annoy, also saves the index to disk
@@ -121,3 +163,24 @@ class GameRecommender(object):
         np.save(self.file_names['data'], self.data)
         np.save(self.file_names['users_list'], self.users_list)
         np.save(self.file_names['user_indexes'], self.user_indexes)
+
+if __name__ == "__main__":
+    # Example and simple test of the recommedations
+    import random
+    rec = GameRecommender()
+
+    # Random edited row used for recommendation
+    test_row = random.choice(rec.data)
+    for i in range(0,4):
+        test_row[random.randint(0, len(test_row)-1)] = random.randint(1, 10)
+    print("Random edited vector of data recommendations:")
+    print("Test Vector: {0}".format(test_row))
+    r_games = rec.recommendations_by_vector(test_row, 10)
+
+    print("----------------------------------------------")
+
+    # Random username used for recommendation
+    r_username = random.choice(rec.users_list)
+    print("Random username recommendations:")
+    print("Test Username: {0}".format(r_username))
+    r_games = rec.recommendations_by_username(r_username, 10)
