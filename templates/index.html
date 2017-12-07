@@ -10,9 +10,33 @@
 </head>
 <body>
 <h1>Board game recommender</h1>
+<div id="add-game-form">
+	<select class="game-selector" id="game-selector" name="game">
+		{% for key, value in games.items() %}
+			<option value="{{value}}">{{key}}</option>
+		{% endfor %}
+	</select>
+	<select class="rating-selector" id="rating-selector" name="game">
+		{% for n in range(1, 11) %}
+			<option value="{{n}}">{{n}}</option>
+		{% endfor %}
+	</select>
+	<button type="button" onclick="addGame()">Add game!</button> 
 
-<select class="game-selector" name="game">
-<option value="ID">Game name</option>
-</select>
+	<p>
+		<button type="button" onclick="getRecommendation()">Submit!</button> 
+	</p>
+</div>
+<div id="list-games-container">
+	<h1>
+		Rated games
+	</h1>
+	<div id="list-games">
+
+	</div>
+
+</div>
+
+
 </body>
 </html>
