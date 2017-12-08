@@ -2,9 +2,13 @@ import numpy as np
 import json
 from collections import OrderedDict
 from game_recommender import GameRecommender
+import sys  
 
 from flask import Flask, render_template, request
 app = Flask(__name__)
+
+reload(sys)  
+sys.setdefaultencoding('utf8')
 
 @app.route("/")
 def main_page():
@@ -39,8 +43,13 @@ def get_recommendation():
 	print (len(gameRecommender.game_indexes))
 	r_games = gameRecommender.recommendations_by_vector(gamesRow, 10)
 
+	result_games = []
+	for game in r_games:
+		game_tuple = (gameRecommender.games_list[game[0]], game[1])
+		result_games.append(game_tuple)
 
-	return "test"
+	print (json.dumps(result_games))
+	return json.dumps(result_games)
 
 if __name__ == "__main__":
     app.run()

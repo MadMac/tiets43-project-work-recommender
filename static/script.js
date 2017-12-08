@@ -42,5 +42,13 @@ function getRecommendation() {
 
     $.post("/get-recommendation", JSON.stringify(jsonData), function( data ) {
         console.log(data);
+        recommendationData = JSON.parse(data);
+        console.log(recommendationData)
+        $('#list-recommendations-list').empty();
+        for (var i = 0; i < recommendationData.length; i++) {
+            console.log(recommendationData[i])
+            $('#list-recommendations-list').append("<tr><td>" + recommendationData[i][0] + "</td><td>" + recommendationData[i][1] + "</td></tr>");
+        }
+        console.log(allGames)
     });
 }
