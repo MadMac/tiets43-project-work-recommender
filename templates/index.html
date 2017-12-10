@@ -11,6 +11,7 @@
 <body>
 <h1>Board game recommender</h1>
 <div id="add-game-form">
+	<h2>Rate games:</h2>
 	<select class="game-selector" id="game-selector" name="game">
 		{% for key, value in games.items() %}
 			<option value="{{value}}">{{key}}</option>
@@ -27,13 +28,24 @@
 		<button type="button" onclick="getRecommendation()">Submit!</button> 
 	</p>
 </div>
+<div id="select-user-form">
+	<h2>Get recommendations for an existing user:</h2>
+	<select class="user-selector" id="user-selector" name="user">
+		{% for key, value in users.items() %}
+			<option value="{{value}}">{{key}}</option>
+		{% endfor %}
+	</select>
+	<p>
+		<button type="button" onclick="getRecommendationUser()">Submit!</button> 
+	</p>
+</div>
 <div id="list-games-container">
 	<h1>
 		Rated games
 	</h1>
-	<div id="list-games">
+	<table id="list-games">
 
-	</div>
+	</table>
 
 </div>
 <div id="list-recommendations">

@@ -1,5 +1,6 @@
 $(document).ready(function() {
     $('.game-selector').select2();
+    $('.user-selector').select2();
 });
 
 var allGames = [];
@@ -24,7 +25,7 @@ function addGame() {
 
     $('#list-games').empty();
     for (var i = 0; i < allGames.length; ++i) {
-        $('#list-games').append("<div>" + allGames[i][0] + ": " + allGames[i][2] + "</div>");
+        $('#list-games').append("<tr><td>" + allGames[i][0] + "</td><td>" + allGames[i][2] + "</td></tr>");
     }
     
 }
@@ -50,5 +51,30 @@ function getRecommendation() {
             $('#list-recommendations-list').append("<tr><td>" + recommendationData[i][0] + "</td><td>" + recommendationData[i][1] + "</td></tr>");
         }
         console.log(allGames)
+    });
+}
+
+function getRecommendationUser() {
+    jsonData = new Array();
+    userData = new Object();
+    userData.name = $('#user-selector option:selected').text();
+    jsonData.push(userData);
+
+    $.post("/get-recommendation-user", JSON.stringify(jsonData), function( data ) {
+        // console.log(data);
+        recommendationData = JSON.parse(data)[0];
+        usersGames = JSON.parse(data)[1];
+        // console.log(recommendationData)
+        $('#list-recommendations-list').empty();
+        for (var i = 0; i < recommendationData.length; i++) {
+            // console.log(recommendationData[i])
+            $('#list-recommendations-list').append("<tr><td>" + recommendationData[i][0] + "</td><td>" + recommendationData[i][1] + "</td></tr>");
+        }
+
+        $('#list-games').empty();
+        for (var i = 0; i < usersGames.length; i++) {
+            $('#list-games').append("<tr><td>" + usersGames[i][0] + "</td><td>" + usersGames[i][1] + "</td></tr>");
+        }
+        // console.log(allGames)
     });
 }
