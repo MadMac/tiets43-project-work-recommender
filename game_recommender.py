@@ -63,7 +63,7 @@ class GameRecommender(object):
         a_neighbor = self.__average_similar_user_ratings(r_users)
         new_games = []
         for i in range(len(a_neighbor)):
-            if user_row[k] == 0 and a_neighbor[i] != 0:
+            if user_row[i] == 0 and a_neighbor[i] != 0:
                 new_games.append((i, a_neighbor[i]))
         new_games.sort(key=lambda x: x[1], reverse=True)
         new_games = new_games[:n]
@@ -113,7 +113,7 @@ class GameRecommender(object):
         a_neighbor = self.__average_similar_user_ratings(r_users)
         new_games = []
         for i in range(len(a_neighbor)):
-            if vec[k] == 0 and a_neighbor[i] != 0:
+            if vec[i] == 0 and a_neighbor[i] != 0:
                 new_games.append((i, a_neighbor[i]))
         new_games.sort(key=lambda x: x[1], reverse=True)
         new_games = new_games[:n]
