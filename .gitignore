@@ -3,3 +3,4 @@ user_reviews.db
 *.npy
 __pycache__/*.pyc
 *.ann
+*.pyc

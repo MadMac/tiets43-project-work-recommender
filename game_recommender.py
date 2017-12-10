@@ -40,6 +40,11 @@ class GameRecommender(object):
         r_users = []
         i = 0
         while len(r_indexes) < n:
+            # If the number of generated neighbors is higher than
+            # the number of users we have, we cannot generate as 
+            # many recommendations as desired
+            if (i+100) > len(self.users_list):
+                break
             u_neighbors = u.get_nns_by_item(index, i+100)
             while i < len(u_neighbors):
                 neighbor = self.data[u_neighbors[i]]
@@ -85,6 +90,11 @@ class GameRecommender(object):
         r_users = []
         i = 0
         while len(r_indexes) < n:
+            # If the number of generated neighbors is higher than
+            # the number of users we have, we cannot generate as 
+            # many recommendations as desired
+            if (i+100) > len(self.users_list):
+                break
             u_neighbors = u.get_nns_by_vector(vec, i+100)
             while i < len(u_neighbors):
                 neighbor = self.data[u_neighbors[i]]
