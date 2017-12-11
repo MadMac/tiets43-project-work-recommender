@@ -14,10 +14,7 @@ def main_page():
 	allGames = OrderedDict(sorted(gameRecommender.game_indexes.items(), key=lambda t: t[0]))
 
 	allUsers = OrderedDict(sorted(itertools.islice(gameRecommender.user_indexes.items(), 1000), key=lambda t: t[0]))
-
-	print(len(allGames))
-	print(len(allUsers))
-
+	
 	# print (gameRecommender.game_indexes)
 	return render_template('index.html', games=allGames, users=allUsers)
 
@@ -25,10 +22,9 @@ def main_page():
 def get_recommendation():
 	gameRecommender = GameRecommender()
 	allGames = request.get_json(force=True)
-	print (allGames)
 
 	gamesRow = []
-
+	filters = {};
 	for i in range(len(gameRecommender.games_list)):
 		selectedGame = None
 
@@ -37,14 +33,18 @@ def get_recommendation():
 			if i == int(game['id']):
 				selectedGame = game
 				# print (game)
+			
+			if 'minplayers' not in filters and 'minplayers' in game:
+				filters['minplayers'] = int(game['minplayers'])
+			if 'maxplayers' not in filters and 'maxplayers' in game:
+				filters['maxplayers'] = int(game['maxplayers'])
 	
 		if selectedGame is None:
 			gamesRow.append(0)
 		else:
 			gamesRow.append(int(selectedGame['rating']))
-	print (len(gamesRow))
-	print (len(gameRecommender.game_indexes))
-	r_games = gameRecommender.recommendations_by_vector(gamesRow, 10)
+
+	r_games = gameRecommender.recommendations_by_vector(gamesRow, 10, 6, filters)
 
 	result_games = []
 	for game in r_games:
@@ -61,8 +61,14 @@ def get_recommendation_user():
 	selectedUser = request.get_json(force=True)
 	if len(selectedUser) > 0:
 		selectedUserString = selectedUser[0]['name']
+
+		filters = {};
+		if 'minplayers' in selectedUser[0]:
+			filters['minplayers'] = int(selectedUser[0]['minplayers'])
+		if 'maxplayers' in selectedUser[0]:
+			filters['maxplayers'] = int(selectedUser[0]['maxplayers'])
 	
-		r_games = gameRecommender.recommendations_by_username(selectedUserString, 10)
+		r_games = gameRecommender.recommendations_by_username(selectedUserString, 10, 6, filters)
 
 		users_ratings = gameRecommender.data[gameRecommender.user_indexes[selectedUserString]]
 		# gamesRow = gameRecommender.user_indexes

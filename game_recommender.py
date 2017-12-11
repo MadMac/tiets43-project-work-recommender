@@ -5,22 +5,24 @@ class GameRecommender(object):
 
     def __init__(self, fn_game_indexes='game_indexes.npy', fn_user_indexes='user_indexes.npy',
                  fn_users_list='users_list.npy', fn_games_list='games_list.npy',
-                 fn_data='data.npy', fn_annoy_index='annoy_index.ann'):
+                 fn_data='data.npy', fn_annoy_index='annoy_index.ann', fn_game_information='game_information.npy'):
         self.file_names = {
             'game_indexes' : fn_game_indexes,
             'user_indexes' : fn_user_indexes,
             'users_list' : fn_users_list,
             'games_list' : fn_games_list,
             'data' : fn_data,
-            'annoy_index' : fn_annoy_index
+            'annoy_index' : fn_annoy_index,
+            'game_information' : fn_game_information
         }
         self.game_indexes = np.load(fn_game_indexes).item()
         self.user_indexes = np.load(fn_user_indexes).item()
         self.users_list = np.load(fn_users_list)
         self.games_list = np.load(fn_games_list)
         self.data = np.load(fn_data)
+        self.game_information = np.load(fn_game_information).item()
 
-    def recommendations_by_username(self, username, n, rating_limit=8):
+    def recommendations_by_username(self, username, n, rating_limit=8, filters={}):
         """ Uses the generated index for finding nearest neighbors and then tries
         to find game recommendations from those users
 
@@ -35,7 +37,7 @@ class GameRecommender(object):
         user_row = self.data[index]
         u = AnnoyIndex(len(self.games_list))
         u.load(self.file_names['annoy_index'])
-
+ 
         r_indexes = []
         r_users = []
         i = 0
@@ -49,6 +51,7 @@ class GameRecommender(object):
             while i < len(u_neighbors):
                 neighbor = self.data[u_neighbors[i]]
                 for k in range(len(neighbor)):
+                    
                     if neighbor[k] > rating_limit and user_row[k] == 0 and k not in r_indexes:
                         r_indexes.append(k)
                         r_users.append(neighbor)
@@ -64,6 +67,12 @@ class GameRecommender(object):
         new_games = []
         for i in range(len(a_neighbor)):
             if user_row[i] == 0 and a_neighbor[i] != 0:
+                if 'minplayers' in filters and self.game_information[self.games_list[i]][0] is not None:
+                    if self.game_information[self.games_list[i]][0] < filters['minplayers']:
+                        continue
+                if 'maxplayers' in filters and self.game_information[self.games_list[i]][0] is not None:
+                    if self.game_information[self.games_list[i]][0] > filters['maxplayers']:
+                        continue
                 new_games.append((i, a_neighbor[i]))
         new_games.sort(key=lambda x: x[1], reverse=True)
         new_games = new_games[:n]
@@ -72,7 +81,7 @@ class GameRecommender(object):
             print("Game: {0:40} Simlar users rating: {1:4.3}".format(self.games_list[index[0]], index[1]))
         return new_games
 
-    def recommendations_by_vector(self, vec, n, rating_limit=8):
+    def recommendations_by_vector(self, vec, n, rating_limit=8, filters={}):
         """ Finds users who have given similar reviews as in the given vector and finds
         n game recommendations from those users
 
@@ -114,6 +123,12 @@ class GameRecommender(object):
         new_games = []
         for i in range(len(a_neighbor)):
             if vec[i] == 0 and a_neighbor[i] != 0:
+                if 'minplayers' in filters and self.game_information[self.games_list[i]][0] is not None:
+                    if self.game_information[self.games_list[i]][0] < filters['minplayers']:
+                        continue
+                if 'maxplayers' in filters and self.game_information[self.games_list[i]][1] is not None:
+                    if self.game_information[self.games_list[i]][1] > filters['maxplayers']:
+                        continue
                 new_games.append((i, a_neighbor[i]))
         new_games.sort(key=lambda x: x[1], reverse=True)
         new_games = new_games[:n]

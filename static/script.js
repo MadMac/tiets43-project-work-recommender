@@ -38,19 +38,25 @@ function getRecommendation() {
         gameData.name = allGames[i][0];
         gameData.id = allGames[i][1];
         gameData.rating = allGames[i][2];
+        if ($('#minplayer-amount').val()) {
+            gameData.minplayers = $('#minplayer-amount').val();
+        }   
+        if ($('#maxplayer-amount').val()) {
+            gameData.maxplayers = $('#maxplayer-amount').val();
+        }   
         jsonData.push(gameData);
     }
 
     $.post("/get-recommendation", JSON.stringify(jsonData), function( data ) {
-        console.log(data);
+        // console.log(data);
         recommendationData = JSON.parse(data);
-        console.log(recommendationData)
+        // console.log(recommendationData)
         $('#list-recommendations-list').empty();
         for (var i = 0; i < recommendationData.length; i++) {
             console.log(recommendationData[i])
             $('#list-recommendations-list').append("<tr><td>" + recommendationData[i][0] + "</td><td>" + recommendationData[i][1] + "</td></tr>");
         }
-        console.log(allGames)
+        // console.log(allGames)
     });
 }
 
@@ -58,7 +64,14 @@ function getRecommendationUser() {
     jsonData = new Array();
     userData = new Object();
     userData.name = $('#user-selector option:selected').text();
+    if ($('#minplayer-amount').val()) {
+        userData.minplayers = $('#minplayer-amount').val();
+    }   
+    if ($('#maxplayer-amount').val()) {
+        userData.maxplayers = $('#maxplayer-amount').val();
+    }    
     jsonData.push(userData);
+    // console.log(jsonData);
 
     $.post("/get-recommendation-user", JSON.stringify(jsonData), function( data ) {
         // console.log(data);
