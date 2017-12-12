@@ -5,7 +5,6 @@ import numpy as np
 
 conn = sqlite3.connect('bgg_kanta.db')
 
-# Limit the number of games to 10 for testing purposes
 data = conn.execute('SELECT * FROM alldata LIMIT 600')
 
 game_names = []

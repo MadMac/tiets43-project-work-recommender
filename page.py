@@ -44,7 +44,7 @@ def get_recommendation():
 		else:
 			gamesRow.append(int(selectedGame['rating']))
 
-	r_games = gameRecommender.recommendations_by_vector(gamesRow, 10, 6, filters)
+	r_games = gameRecommender.get_recommendations(gamesRow, 10, 6, filters)
 
 	result_games = []
 	for game in r_games:
@@ -68,7 +68,7 @@ def get_recommendation_user():
 		if 'maxplayers' in selectedUser[0]:
 			filters['maxplayers'] = int(selectedUser[0]['maxplayers'])
 	
-		r_games = gameRecommender.recommendations_by_username(selectedUserString, 10, 6, filters)
+		r_games = gameRecommender.get_recommendations(selectedUserString, 10, 6, filters)
 
 		users_ratings = gameRecommender.data[gameRecommender.user_indexes[selectedUserString]]
 		# gamesRow = gameRecommender.user_indexes
