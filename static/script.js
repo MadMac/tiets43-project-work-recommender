@@ -26,9 +26,25 @@ function addGame() {
 
     $('#list-games').empty();
     for (var i = 0; i < allGames.length; ++i) {
-        $('#list-games').append("<tr><td>" + allGames[i][0] + "</td><td>" + allGames[i][2] + "</td></tr>");
+        $('#list-games').append("<tr><td>" + allGames[i][0] + "</td><td>" + allGames[i][2] + "</td><td> \
+        <button type=\"button\" onclick=\"removeGame(" + allGames[i][1] + ")\">X</button></td ></tr > ");
     }
     
+}
+
+function removeGame(gameId) {
+
+    for (var i = 0; i < allGames.length; ++i) {
+        if (parseInt(allGames[i][1], 10) == gameId) {
+            allGames.splice(i, 1);
+        }
+    }
+
+    $('#list-games').empty();
+    for (var i = 0; i < allGames.length; ++i) {
+        $('#list-games').append("<tr><td>" + allGames[i][0] + "</td><td>" + allGames[i][2] + "</td><td> \
+        <button type=\"button\" onclick=\"removeGame(" + allGames[i][1] + ")\">X</button></td ></tr > ");
+    }
 }
 
 function getRecommendation() {
