@@ -1,4 +1,5 @@
 import numpy as np
+import sys
 from annoy import AnnoyIndex
 
 class GameRecommender(object):
@@ -17,13 +18,16 @@ class GameRecommender(object):
             'game_information' : fn_game_information,
             'game_mechanics' : fn_game_mechanics
         }
-        self.game_indexes = np.load(fn_game_indexes).item()
-        self.user_indexes = np.load(fn_user_indexes).item()
-        self.users_list = np.load(fn_users_list)
-        self.games_list = np.load(fn_games_list)
-        self.data = np.load(fn_data)
-        self.game_information = np.load(fn_game_information).item()
-        self.game_mechanics = np.load(fn_game_mechanics)
+        try:
+            self.game_indexes = np.load(fn_game_indexes).item()
+            self.user_indexes = np.load(fn_user_indexes).item()
+            self.users_list = np.load(fn_users_list)
+            self.games_list = np.load(fn_games_list)
+            self.data = np.load(fn_data)
+            self.game_information = np.load(fn_game_information).item()
+            self.game_mechanics = np.load(fn_game_mechanics)
+        except IOError:
+            sys.exit("Could not load some or all of the necessary data files, please run data_generation.py first.")
 
     def get_recommendations(self, row_or_user, n, rating_limit=8, filters={}):
         """ Finds users who have given similar reviews as in the given vector and finds
@@ -37,7 +41,11 @@ class GameRecommender(object):
             List of game indexes that are recommended
         """
         u = AnnoyIndex(len(self.games_list))
-        u.load(self.file_names['annoy_index'])
+        try:
+            u.load(self.file_names['annoy_index'])
+        except FileNotFoundError:
+            self.build_annoy_index()
+            u.load(self.file_names['annoy_index'])
 
         if isinstance(row_or_user, str):
             index = self.user_indexes[row_or_user]
