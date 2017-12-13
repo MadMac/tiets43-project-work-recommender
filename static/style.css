@@ -2,6 +2,10 @@
 	min-width: 400px;
 }
 
+.mechanics-selector {
+	min-width: 500px;
+}
+
 tr td:first-child {
 	width: 500px;
 }

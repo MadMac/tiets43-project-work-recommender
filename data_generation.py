@@ -11,12 +11,14 @@ game_names = []
 user_names = []
 users = {}
 game_information = {}
+game_mechanics = []
 
 for row in data:
     game = ast.literal_eval(row[1])
     game_name = "`" + game['name'] + "`"
     game_names.append(game_name)
-    game_information[game_name] = [game['minplayers'], game['maxplayers']]
+    game_mechanics.extend(game['mechanics'])
+    game_information[game_name] = [game['minplayers'], game['maxplayers'], game['mechanics']]
     for c in game['comments']:
         if c['username'] not in users:
             users[c['username']] = {}
@@ -42,6 +44,9 @@ for i in range(0, len(user_names)):
         reviews[game_indexes[key]] = users[user_names[i]][key]
     data[i] = reviews
 
+# Remove duplicates from the list of game mechanics
+game_mechanics = list(set(game_mechanics))
+
 
 # Save the game and user indexes and game indexes to disk
 # (These can be used to get the game and user indexes by name)
@@ -50,4 +55,5 @@ np.save('game_indexes.npy', game_indexes)
 np.save('games_list.npy', game_names)
 np.save('users_list.npy', user_names)
 np.save('game_information.npy', game_information)
+np.save('game_mechanics.npy', game_mechanics)
 np.save('data.npy', data)

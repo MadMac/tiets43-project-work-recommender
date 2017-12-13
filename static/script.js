@@ -1,6 +1,7 @@
 $(document).ready(function() {
     $('.game-selector').select2();
     $('.user-selector').select2();
+    $('.mechanics-selector').select2();
 });
 
 var allGames = [];
@@ -43,7 +44,10 @@ function getRecommendation() {
         }   
         if ($('#maxplayer-amount').val()) {
             gameData.maxplayers = $('#maxplayer-amount').val();
-        }   
+        }
+        if ($('#mechanics-selector').val()) {
+            gameData.mechanics = $('#mechanics-selector').val();
+        }
         jsonData.push(gameData);
     }
 
@@ -69,7 +73,10 @@ function getRecommendationUser() {
     }   
     if ($('#maxplayer-amount').val()) {
         userData.maxplayers = $('#maxplayer-amount').val();
-    }    
+    }
+    if ($('#mechanics-selector').val()) {
+        userData.mechanics = $('#mechanics-selector').val();
+    }
     jsonData.push(userData);
     // console.log(jsonData);
 

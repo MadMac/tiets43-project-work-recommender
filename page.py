@@ -15,8 +15,10 @@ def main_page():
 
 	allUsers = OrderedDict(sorted(itertools.islice(gameRecommender.user_indexes.items(), 1000), key=lambda t: t[0]))
 	
+	gameMechanics = sorted(gameRecommender.game_mechanics)
+
 	# print (gameRecommender.game_indexes)
-	return render_template('index.html', games=allGames, users=allUsers)
+	return render_template('index.html', games=allGames, users=allUsers, mechanics=gameMechanics)
 
 @app.route("/get-recommendation", methods=["POST"])
 def get_recommendation():
@@ -24,7 +26,7 @@ def get_recommendation():
 	allGames = request.get_json(force=True)
 
 	gamesRow = []
-	filters = {};
+	filters = {}
 	for i in range(len(gameRecommender.games_list)):
 		selectedGame = None
 
@@ -38,6 +40,8 @@ def get_recommendation():
 				filters['minplayers'] = int(game['minplayers'])
 			if 'maxplayers' not in filters and 'maxplayers' in game:
 				filters['maxplayers'] = int(game['maxplayers'])
+			if 'mechanics' not in filters and 'mechanics' in game:
+				filters['mechanics'] = game['mechanics']
 	
 		if selectedGame is None:
 			gamesRow.append(0)
@@ -67,6 +71,8 @@ def get_recommendation_user():
 			filters['minplayers'] = int(selectedUser[0]['minplayers'])
 		if 'maxplayers' in selectedUser[0]:
 			filters['maxplayers'] = int(selectedUser[0]['maxplayers'])
+		if 'mechanics' in selectedUser[0]:
+			filters['mechanics'] = selectedUser[0]['mechanics']
 	
 		r_games = gameRecommender.get_recommendations(selectedUserString, 10, 6, filters)
 

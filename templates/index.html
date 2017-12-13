@@ -44,6 +44,12 @@
 	<h2>Players</h2>
 	<input type="number" id="minplayer-amount"> - 
 	<input type="number" id="maxplayer-amount">
+	<h2>Mechanics</h2>
+	<select class="mechanics-selector" id="mechanics-selector" name="mechanics[]" multiple="multiple">
+		{% for value in mechanics %}
+			<option value="{{value}}">{{value}}</option>
+		{% endfor %}
+	</select>
 </div>
 <div id="list-games-container">
 	<h1>

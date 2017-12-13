@@ -5,7 +5,8 @@ class GameRecommender(object):
 
     def __init__(self, fn_game_indexes='game_indexes.npy', fn_user_indexes='user_indexes.npy',
                  fn_users_list='users_list.npy', fn_games_list='games_list.npy',
-                 fn_data='data.npy', fn_annoy_index='annoy_index.ann', fn_game_information='game_information.npy'):
+                 fn_data='data.npy', fn_annoy_index='annoy_index.ann', fn_game_information='game_information.npy',
+                 fn_game_mechanics='game_mechanics.npy'):
         self.file_names = {
             'game_indexes' : fn_game_indexes,
             'user_indexes' : fn_user_indexes,
@@ -13,7 +14,8 @@ class GameRecommender(object):
             'games_list' : fn_games_list,
             'data' : fn_data,
             'annoy_index' : fn_annoy_index,
-            'game_information' : fn_game_information
+            'game_information' : fn_game_information,
+            'game_mechanics' : fn_game_mechanics
         }
         self.game_indexes = np.load(fn_game_indexes).item()
         self.user_indexes = np.load(fn_user_indexes).item()
@@ -21,6 +23,7 @@ class GameRecommender(object):
         self.games_list = np.load(fn_games_list)
         self.data = np.load(fn_data)
         self.game_information = np.load(fn_game_information).item()
+        self.game_mechanics = np.load(fn_game_mechanics)
 
     def get_recommendations(self, row_or_user, n, rating_limit=8, filters={}):
         """ Finds users who have given similar reviews as in the given vector and finds
@@ -98,6 +101,10 @@ class GameRecommender(object):
         if 'maxplayers' in filters and self.game_information[self.games_list[game_index]][1] is not None:
             if self.game_information[self.games_list[game_index]][1] > filters['maxplayers']:
                 return False
+        if 'mechanics' in filters and self.game_information[self.games_list[game_index]][2] is not None:
+            for mechanic in filters['mechanics']:
+                if mechanic not in self.game_information[self.games_list[game_index]][2]:
+                    return False
         return True
 
     def __average_similar_user_ratings(self, r_users):
