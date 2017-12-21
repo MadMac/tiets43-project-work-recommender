@@ -61,7 +61,7 @@ class GameRecommender(object):
             # If the number of generated neighbors is higher than
             # the number of users we have, we cannot generate as 
             # many recommendations as desired
-            if (generated_n*generated_n) > len(self.users_list):
+            if (generated_n) > len(self.users_list):
                 break
             # Rapidly increase the number of generated neighbors
             generated_n = generated_n * generated_n
